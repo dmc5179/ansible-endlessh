@@ -6,3 +6,4 @@ endlessh_packages:
   - gcc
   - firewalld
   - git
+  - fail2ban

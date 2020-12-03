@@ -1,0 +1,45 @@
+[INCLUDES]
+
+before = common.conf
+
+[DEFAULT]
+
+_daemon = sshd
+
+# optional prefix (logged from several ssh versions) like "error: ", "error: PAM: " or "fatal: "
+__pref = (?:(?:error|fatal): (?:PAM: )?)?
+# optional suffix (logged from several ssh versions) like " [preauth]"
+#__suff = (?: port \d+)?(?: \[preauth\])?\s*
+__suff = (?: (?:port \d+|on \S+|\[preauth\])){0,3}\s*
+__on_port_opt = (?: (?:port \d+|on \S+)){0,2}
+# close by authenticating user:
+__authng_user = (?: (?:invalid|authenticating) user <F-USER>\S+|.+?</F-USER>)?
+
+# for all possible (also future) forms of "no matching (cipher|mac|MAC|compression method|key exchange method|host key type) found",
+# see ssherr.c for all possible SSH_ERR_..._ALG_MATCH errors.
+__alg_match = (?:(?:\w+ (?!found\b)){0,2}\w+)
+
+# PAM authentication mechanism, can be overridden, e. g. `filter = sshd[__pam_auth='pam_ldap']`:
+__pam_auth = pam_[a-z]+
+
+[Definition]
+
+prefregex = ^<F-MLFID>%(__prefix_line)s</F-MLFID>%(__pref)s<F-CONTENT>.+</F-CONTENT>$
+
+failregex = ^[iI](?:llegal|nvalid) user <F-USER>.*?</F-USER> from <HOST>%(__suff)s$
+            ^User not known to the underlying authentication module for <F-USER>.*</F-USER> from <HOST>%(__suff)s$
+            ^Failed publickey for invalid user <F-USER>(?P<cond_user>\S+)|(?:(?! from ).)*?</F-USER> from <HOST>%(__on_port_opt)s(?: ssh\d*)?(?(cond_user): |(?:(?:(?! from ).)*)$)
+            ^Failed \b(?!publickey)\S+ for (?P<cond_inv>invalid user )?<F-USER>(?P<cond_user>\S+)|(?(cond_inv)(?:(?! from ).)*?|[^:]+)</F-USER> from <HOST>%(__on_port_opt)s(?: ssh\d*)?(?(cond_user): |(?:(?:(?! from 
+).)*)$)
+            ^<F-USER>ROOT</F-USER> LOGIN REFUSED FROM <HOST>
+            ^[iI](?:llegal|nvalid) user <F-USER>.*?</F-USER> from <HOST>%(__suff)s$
+            ^User <F-USER>.+</F-USER> from <HOST> not allowed because not listed in AllowUsers%(__suff)s$
+            ^User <F-USER>.+</F-USER> from <HOST> not allowed because listed in DenyUsers%(__suff)s$
+            ^User <F-USER>.+</F-USER> from <HOST> not allowed because not in any group%(__suff)s$
+            ^User <F-USER>.+</F-USER> from <HOST> not allowed because a group is listed in DenyGroups%(__suff)s$
+            ^User <F-USER>.+</F-USER> from <HOST> not allowed because none of user's groups are listed in AllowGroups%(__suff)s$
+            ^refused connect from \S+ \(<HOST>\)
+	    
+ignoreregex = 
+
+journalmatch = _SYSTEMD_UNIT=sshd.service + _COMM=sshd

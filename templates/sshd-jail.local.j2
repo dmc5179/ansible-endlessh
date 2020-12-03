@@ -1,0 +1,14 @@
+[sshd]
+enabled = true
+mode = aggressive
+bantime = 1d
+
+[sshd-invaliduser]
+enabled = true
+maxretry = 1
+bantime = 1d
+port    = 22
+fwdport = 2222
+logpath = %(sshd_log)s
+backend = %(sshd_backend)s
+banaction = firewallcmd-redirect

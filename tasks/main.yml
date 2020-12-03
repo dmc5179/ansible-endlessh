@@ -9,6 +9,20 @@
   with_items:
     - '{{ endlessh_packages }}'
 
+- name: Apply SSH Daemon Rules
+  become: true
+  template:
+    src: 'templates/99-local.conf.j2'
+    dest: '/etc/ssh/sshd_config.d/99-local.conf'
+
+- name: Restart ssh daemon
+  become: true
+  systemd:
+    name: sshd
+    state: restarted
+    enabled: true
+    masked: false
+
 - name: Clone endlessh git repository
   git:
     repo: 'https://github.com/skeeto/endlessh.git'
@@ -19,7 +33,15 @@
   make:
     chdir: '{{ git_dir }}'
     target: install
-    
+
+- name: Start and Enable firewalld
+  become: true
+  systemd:
+    name: firewalld
+    state: started
+    enabled: true
+    masked: false
+
 - name: Install endlessh systemd service
   become: true
   copy:
@@ -35,3 +57,35 @@
     enabled: true
     masked: false
     daemon_reload: true
+
+- name: Fail2Ban Local Jail
+  become: true
+  template:
+    src: 'templates/jail.local.j2'
+    dest: '/etc/fail2ban/jail.local'
+
+- name: sshd jail
+  become: true
+  template:
+    src: 'templates/sshd-jail.local.j2'
+    dest: '/etc/fail2ban/jail.d/sshd-jail.local'
+
+- name: firewalld redirect
+  become: true
+  template:
+    src: 'templates/firewalld-redirect.conf.j2'
+    dest: '/etc/fail2ban/action.d/firewallcmd-redirect.conf'
+
+- name: sshd invalid user
+  become: true
+  template:
+    src: 'templates/sshd-invaliduser.conf.j2'
+    dest: '/etc/fail2ban/filter.d/sshd-invaliduser.conf'
+
+- name: Start and Enable fail2ban
+  become: true
+  systemd:
+    name: fail2ban
+    state: restarted
+    enabled: true
+    masked: false

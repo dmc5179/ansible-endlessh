@@ -1,0 +1,7 @@
+[DEFAULT]
+bantime = 3600
+backend = systemd
+action    = %(action_mwl)s
+banaction = firewallcmd-ipset
+maxretry = 3
+ignoreip = 127.0.0.1/8 192.168.1.0/24
