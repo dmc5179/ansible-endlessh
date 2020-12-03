@@ -35,4 +35,5 @@ BSD
 Author Information
 ------------------
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+Perry Myers <pmyers@redhat.com> [Creator of awesome idea]
+Dan Clark <danclark@redhat.com> [Contributor]
