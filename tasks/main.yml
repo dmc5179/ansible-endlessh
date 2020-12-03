@@ -12,11 +12,26 @@
 - name: Clone endlessh git repository
   git:
     repo: 'https://github.com/skeeto/endlessh.git'
-    dest: '/tmp/endlessh'
+    dest: '{{ git_dir }}'
 
 - name: Build endlessh
   become: true
   make:
-    chdir: '/tmp/endlessh'
+    chdir: '{{ git_dir }}'
     target: install
     
+- name: Install endlessh systemd service
+  become: true
+  copy:
+    src: '{{ git_dir }}/util/endlessh.service'
+    dest: '/usr/lib/systemd/system'
+    remote_src: true
+
+- name: Start and enable the endlessh service
+  become: true
+  systemd:
+    name: endlessh
+    state: started
+    enabled: true
+    masked: false
+    daemon_reload: true

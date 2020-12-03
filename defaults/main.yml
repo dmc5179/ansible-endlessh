@@ -1,2 +1,4 @@
 ---
 # defaults file for ansible-endlessh
+
+git_dir: '/tmp/endlessh'
