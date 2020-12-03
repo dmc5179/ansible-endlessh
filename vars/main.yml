@@ -1,2 +1,8 @@
 ---
 # vars file for ansible-endlessh
+
+endlessh_packages:
+  - make
+  - gcc
+  - firewalld
+  - git
